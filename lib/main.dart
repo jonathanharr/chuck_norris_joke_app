@@ -1,125 +1,205 @@
 import 'package:flutter/material.dart';
+import 'package:chuck_norris_joke_app/app_state.dart';
+import 'package:chuck_norris_joke_app/pages/favorites.dart';
+import 'package:provider/provider.dart';
+import 'package:chuck_norris_joke_app/pages/home.dart';
+import 'package:chuck_norris_joke_app/pages/query.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => AppState(),
+      child: const MyApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  late TabBarView _tabBarView;
+  int _selectedIndex = 0;
+  final _pageTitles = <String>["Chuck-Joke", "Query", "Favorites"];
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(vsync: this, length: 3);
+    _tabController.addListener(() {
+      setState(() {
+        _selectedIndex = _tabController.index;
+      });
+    });
+
+    _tabBarView = TabBarView(
+      physics: const NeverScrollableScrollPhysics(),
+      controller: _tabController,
+      children: [
+        const HomePage(),
+        QueryPage(
+          onQueryFunction: () => fetchWithQuery(),
+        ),
+        const FavoritesPage(),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+      theme: GlobalThemeData.lightThemeData(),
+      darkTheme: GlobalThemeData.darkThemeData(),
+      home: DefaultTabController(
+        length: 3,
+        child: Scaffold(
+            resizeToAvoidBottomInset: false,
+            appBar: AppBar(
+                automaticallyImplyLeading: false,
+                toolbarHeight: 80,
+                title: SizedBox(
+                  height: 80,
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: 80,
+                          decoration: const BoxDecoration(
+                            image: DecorationImage(
+                              image: NetworkImage(
+                                'https://i.pinimg.com/originals/f1/13/7c/f1137c93551394477fa6bca8dfef803d.png',
+                              ),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          _pageTitles[_selectedIndex],
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
+            bottomNavigationBar: BottomNavigationBar(
+              currentIndex: _selectedIndex,
+              onTap: (int index) {
+                setState(() {
+                  _selectedIndex = index;
+                  _tabController.animateTo(_selectedIndex);
+                });
+              },
+              items: const <BottomNavigationBarItem>[
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.assistant_direction_sharp),
+                  label: "Chuck-Joke",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.search),
+                  label: 'Query',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.favorite),
+                  label: 'Favorites',
+                ),
+              ],
+            ),
+            body: _tabBarView
+          ),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
+  }
+
+  fetchWithQuery() {
+    _selectedIndex = 0;
+    _tabController.animateTo(_selectedIndex);
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+class GlobalThemeData {
+  static ThemeData lightThemeData() {
+    return ThemeData(
+          useMaterial3: true,
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Color.fromRGBO(241, 91, 35, 100),
+          ),
+          splashColor: Colors.transparent,
+          bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              backgroundColor: Color.fromRGBO(240, 150, 115, 1.0),
+              selectedItemColor: Color.fromARGB(255, 242, 224, 169),
+              unselectedItemColor: Colors.black87
+              ),
+          listTileTheme: const ListTileThemeData(
+            tileColor: Color(0xFFEFF3F3),
+            selectedTileColor: Color(0xFF241E30),
+            iconColor: Color(0xFF241E30),
+            textColor: Color(0xFF241E30),
+          ),
+          colorScheme: const ColorScheme(
+            primary: Color(0xFF241E30),
+            onPrimary: Color.fromARGB(255, 0, 0, 0),
+            primaryContainer: Colors.white,
+            secondary: Color(0xFFEFF3F3),
+            onSecondary: Color(0xFF322942),
+            error: Colors.redAccent,
+            onError: Colors.white,
+            surface: Color(0xFFEFF3F3),
+            onSurface: Color(0xFF241E30),
+            brightness: Brightness.light,
+          ),
+          highlightColor: Colors.transparent,
+          focusColor: Colors.black.withOpacity(0.12));
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
+  static ThemeData darkThemeData() 
+  {
+    return ThemeData(
+          useMaterial3: true,
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Color.fromRGBO(18, 18, 18, 1),
+          ),
+          splashColor: Colors.transparent,
+          bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+            backgroundColor: Color.fromRGBO(30, 30, 30, 1),
+            selectedItemColor: Color.fromARGB(255, 242, 224, 169),
+            unselectedItemColor: Color.fromARGB(255, 200, 200, 200),
+          ),
+          listTileTheme: const ListTileThemeData(
+            tileColor: Color(0xFF1E1E1E),
+            selectedTileColor: Color(0xFF3C3C3C),
+            iconColor: Color(0xFFEFEFEF),
+            textColor: Color(0xFFEFEFEF),
+          ),
+          colorScheme: const ColorScheme(
+            primary: Color(0xFFBB86FC),
+            onPrimary: Color(0xFF121212),
+            primaryContainer: Color(0xFF3700B3),
+            secondary: Color(0xFF03DAC6),
+            onSecondary: Color(0xFF121212),
+            error: Color(0xFFCF6679),
+            onError: Color(0xFF121212),
+            surface: Color(0xFF1E1E1E),
+            onSurface: Color(0xFFEFEFEF),
+            brightness: Brightness.dark,
+          ),
+          highlightColor: Colors.transparent,
+          focusColor: Colors.white.withOpacity(0.12));
   }
+
 }
