@@ -9,17 +9,17 @@ Introducing the Chuck Norris Joke App! With this app you can get a random Chuck 
 ## Features
 
 ### Random Joke
-![Screenshot of Home-tab screen.](img\01.png)
+![Screenshot of Home-tab screen.](img/01.png)
 
 The Home-tab is where the fun begins. Pressing the 'Get Joke' button will fetch a random Chuck Norris joke from the internet and display it on the screen. You can also mark your favorites and save them for later laughs! 
 
 ### Query
-![Screenshot of Query-tab screen.](img\02.png)
+![Screenshot of Query-tab screen.](img/02.png)
 
 The Query-tab is where you can search for a specific joke. Simply type in a keyword and press the 'Search' button. The app will then fetch a joke containing the keyword and display it on the screen.
 
 ### Favorites
-![Screenshot of Favorites-tab screen.](img\03.png)
+![Screenshot of Favorites-tab screen.](img/03.png)
 
 The Favorites-tab is where your favorite jokes are stored. These are also serialized to your phone so you don't risk losing them. You can also reorganize your jokes as well as delete the ones you no longer found funny.
 
